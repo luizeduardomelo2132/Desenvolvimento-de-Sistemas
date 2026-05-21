@@ -1,20 +1,24 @@
 import './App.css'
 import { Route, Routes } from 'react-router-dom'
+import { useState } from 'react'
 import Home from './pages/home'
 import Products from './pages/products'
+import Countries from './pages/countries'
 
 import NavBar from './components/navBar'
+import SideBar from './components/sideBar'
 
 function App() {
-
+  const [sideBarOpen, setSideBarOpen] = useState(false)
   return (
     <>
-      <NavBar></NavBar>
+      {sideBarOpen && <SideBar setSideBarOpen={setSideBarOpen} />}
+      <NavBar setSideBarOpen={setSideBarOpen} />
       <Routes>
         <Route path="/" element={<Home/>}></Route>
-        <Route path="/products" element={<Products/>}></Route>
+        <Route path="products/" element={<Products/>}></Route>
+        <Route path="countries/" element={<Countries/>}></Route>
       </Routes>
-    
     </>
   )
 }
