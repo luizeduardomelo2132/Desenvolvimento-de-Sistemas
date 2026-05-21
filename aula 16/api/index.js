@@ -1,0 +1,12 @@
+const express = require('express'); //import
+const cors = require('cors');
+require('dotenv').config();
+const app = express();
+
+app.use(cors());
+
+require('./startup/db')(); // Conectar banco
+require('./startup/router')(app); // Rodar o router
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Listening on port ${PORT}`));

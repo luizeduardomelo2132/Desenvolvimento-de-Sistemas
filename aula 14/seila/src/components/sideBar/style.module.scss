@@ -1,0 +1,30 @@
+.side_bar {
+    width: 250px;
+    height: 100vh;
+    box-shadow: 0 0 1px 0 black;
+    position: fixed;
+    background-color: white;
+    z-index: 10;
+    
+    color: black;
+    display: flex;
+    justify-content: center;
+    
+    &__header {
+        margin-top: 20px;
+        display: flex;
+        gap: 25px;
+        align-items: center;
+        height: 50px;
+    }
+
+    &__title {
+        font-size: 25px;
+    }
+
+    &__close {
+        color: black;
+        padding: 5px 10px;
+        border: 1px solid black;
+    }
+}
