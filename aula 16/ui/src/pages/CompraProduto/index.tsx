@@ -1,167 +1,147 @@
-import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import axios from "axios";
-import "bootstrap/dist/css/bootstrap.min.css";
+import axios from 'axios';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+interface Produto {
+    _id: string;
+    nome: string;
+    quantidade: number;
+}
 
 interface Cliente {
     _id: string;
     nome: string;
 }
 
-interface Produto {
-    _id: string;
-    nome: string;
-    preco: number;
-}
-
-export default function CompraProduto() {
+export default function InserirCompra() {
     const navigate = useNavigate();
-    
-    const [clientes, setClientes] = useState<Cliente[]>([]);
+
     const [produtos, setProdutos] = useState<Produto[]>([]);
-    
+    const [clientes, setClientes] = useState<Cliente[]>([]);
     const [clienteId, setClienteId] = useState("");
     const [produtoId, setProdutoId] = useState("");
-    const [quantidade, setQuantidade] = useState(1);
-    
-    const [erro, setErro] = useState("");
-    const [sucesso, setSucesso] = useState("");
+    const [quantidade, setQuantidade] = useState<number | string>("");
 
     useEffect(() => {
-        const carregarDados = async () => {
+        const buscarProdutosClientes = async () => {
             try {
-                // Buscando em paralelo para evitar travamento de estados
-                const [resClientes, resProdutos] = await Promise.all([
-                    axios.get("http://localhost:3000/cliente/"),
-                    axios.get("http://localhost:3000/produto/")
-                ]);
+                const response = await axios.get('http://localhost:3000/produto');
+                const listaProdutos = response.data.data || response.data;
+                setProdutos(listaProdutos);
 
-                // Verificando no console se a estrutura veio correta
-                console.log("Resposta Clientes:", resClientes.data);
-                console.log("Resposta Produtos:", resProdutos.data);
-
-                // Garantindo a atribuição segura dos dados
-                if (resClientes.data && resClientes.data.data) {
-                    setClientes(resClientes.data.data);
-                }
-                
-                if (resProdutos.data && resProdutos.data.data) {
-                    setProdutos(resProdutos.data.data);
-                }
-
-            } catch (error: any) {
-                console.error("Erro ao carregar dados:", error);
-                setErro("Não foi possível carregar a lista de clientes ou produtos.");
+                const response2 = await axios.get('http://localhost:3000/cliente');
+                const listaClientes = response2.data.data || response2.data;
+                setClientes(listaClientes);
+            } catch (error) {
+                alert("Erro ao carregar a lista de produtos.");
+                navigate("/");
             }
         };
+        buscarProdutosClientes();
+    }, [navigate]);
 
-        carregarDados();
-    }, []);
+    const produtoSelecionado = produtos.find(p => p._id === produtoId);
+    const quantidadeDisponivel = produtoSelecionado ? produtoSelecionado.quantidade : 0;
 
-    const finalizarCompra = async (event: any) => {
-        event.preventDefault();
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
 
-        if (!clienteId || !produtoId || !quantidade || quantidade < 1) {
-            setErro("Por favor, preencha todos os campos corretamente.");
+        if (Number(quantidade) > quantidadeDisponivel) {
+            alert(`A quantidade solicitada é maior que o estoque disponível (${quantidadeDisponivel}).`);
             return;
         }
 
-        try {
-            setErro("");
-            
-            await axios.post("http://localhost:3000/compra/", {
-                clienteId,
-                produtoId,
-                quantidade: Number(quantidade)
+        const dadosCompra = { 
+            clienteId: clienteId, 
+            produtoId: produtoId, 
+            quantidade: Number(quantidade) 
+        };
+
+        axios.post('http://localhost:3000/compra', dadosCompra)
+            .then(() => {
+                axios.put(`http://localhost:3000/produto/${produtoId}`, {
+                    quantidade: quantidadeDisponivel - Number(quantidade)
+                });
+                navigate('/compras');
+            })
+            .catch((error) => {
+                alert("Erro ao inserir a compra. Tente novamente.");
+                console.error(error);
             });
-
-            setSucesso("Compra registrada com sucesso!");
-            
-            setClienteId("");
-            setProdutoId("");
-            setQuantidade(1);
-
-            setTimeout(() => {
-                navigate("/produtos");
-            }, 2000);
-
-        } catch (error: any) {
-            console.error("Erro ao finalizar compra:", error);
-            setErro(error.response?.data?.message || "Erro ao registrar a compra.");
-        }
-    };
+    }
 
     return (
-        <div className="container py-5">
-            <div className="row justify-content-center">
-                <div className="col-md-6">
-                    <div className="card border-0 shadow-sm p-4" style={{ borderRadius: '12px' }}>
-                        <h2 className="text-center mb-4" style={{ fontWeight: 600 }}>Nova Compra</h2>
-                        
-                        {erro && <div className="alert alert-danger py-2">{erro}</div>}
-                        {sucesso && <div className="alert alert-success py-2">{sucesso}</div>}
+        <div className="d-flex justify-content-center mt-5 align-items-center">
+            <div className="card shadow-sm p-4 w-100" style={{ maxWidth: '450px', borderRadius: '12px' }}>
+                <h2 className="text-center mb-4 text-secondary fw-semibold">Inserir Compra</h2>
 
-                        <form onSubmit={finalizarCompra}>
-                            {/* Seleção de Cliente */}
-                            <div className="mb-3">
-                                <label htmlFor="cliente" className="form-label" style={{ fontWeight: 500 }}>Cliente</label>
-                                <select
-                                    className="form-select"
-                                    id="cliente"
-                                    value={clienteId}
-                                    onChange={(e) => setClienteId(e.target.value)}
-                                >
-                                    <option value="">-- Selecione o Cliente --</option>
-                                    {clientes && clientes.length > 0 && clientes.map((cliente) => (
-                                        <option key={cliente._id} value={cliente._id}>
-                                            {cliente.nome}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* Seleção de Produto */}
-                            <div className="mb-3">
-                                <label htmlFor="produto" className="form-label" style={{ fontWeight: 500 }}>Produto</label>
-                                <select
-                                    className="form-select"
-                                    id="produto"
-                                    value={produtoId}
-                                    onChange={(e) => setProdutoId(e.target.value)}
-                                >
-                                    <option value="">-- Selecione o Produto --</option>
-                                    {produtos && produtos.length > 0 && produtos.map((produto) => (
-                                        <option key={produto._id} value={produto._id}>
-                                            {produto.nome} - R$ {produto.preco}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* Campo de Quantidade */}
-                            <div className="mb-4">
-                                <label htmlFor="quantidade" className="form-label" style={{ fontWeight: 500 }}>Quantidade</label>
-                                <input
-                                    type="number"
-                                    className="form-control"
-                                    id="quantidade"
-                                    min="1"
-                                    value={quantidade}
-                                    onChange={(e) => setQuantidade(Number(e.target.value))}
-                                />
-                            </div>
-
-                            <div className="d-flex gap-3">
-                                <Link to="/" className="btn btn-light w-50" style={{ borderRadius: '6px' }}>
-                                    Voltar
-                                </Link>
-                                <button type="submit" className="btn btn-success w-50" style={{ borderRadius: '6px' }}>
-                                    Confirmar Venda
-                                </button>
-                            </div>
-                        </form>
+                <form onSubmit={handleSubmit} className="d-flex flex-column gap-3">
+                    <div>
+                        <label className="form-label text-muted small fw-medium">Cliente</label>
+                        <select
+                            className="form-select form-select-lg fs-6"
+                            value={clienteId}
+                            onChange={(e) => {
+                                setClienteId(e.target.value);
+                            }}
+                            required
+                        >
+                            <option value="" disabled>Selecione um cliente</option>
+                            {clientes.map((cliente) => (
+                                <option key={cliente._id} value={cliente._id}>
+                                    {cliente.nome}
+                                </option>
+                            ))}
+                        </select>
                     </div>
-                </div>
+
+                    <div>
+                        <label className="form-label text-muted small fw-medium">Produto</label>
+                        <select
+                            className="form-select form-select-lg fs-6"
+                            value={produtoId}
+                            onChange={(e) => {
+                                setProdutoId(e.target.value);
+                                setQuantidade(""); // Reseta a quantidade ao trocar de produto
+                            }}
+                            required
+                        >
+                            <option value="" disabled>Selecione um produto</option>
+                            {produtos.map((produto) => (
+                                <option key={produto._id} value={produto._id} disabled={produto.quantidade <= 0}>
+                                    {produto.nome} {produto.quantidade <= 0 ? '(Sem estoque)' : ''}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="form-label text-muted small fw-medium">
+                            Quantidade 
+                            {produtoSelecionado && <span className="text-primary ms-2">(Em estoque: {quantidadeDisponivel})</span>}
+                        </label>
+                        <input
+                            type="number"
+                            className="form-control form-control-lg fs-6"
+                            placeholder="Ex: 10"
+                            value={quantidade}
+                            onChange={(e) => setQuantidade(e.target.value)}
+                            min="1"
+                            max={produtoSelecionado ? quantidadeDisponivel : ""} // Trava o input HTML
+                            disabled={!produtoId} // Só libera se tiver produto selecionado
+                            required
+                        />
+                    </div>
+
+                    <button
+                        type="submit"
+                        className="btn btn-primary btn-lg w-100 mt-2 fw-medium"
+                        style={{ borderRadius: '8px', backgroundColor: '#4F46E5', borderColor: '#4F46E5' }}
+                        disabled={!produtoId || Number(quantidade) > quantidadeDisponivel}
+                    >
+                        Salvar Compra
+                    </button>
+                </form>
             </div>
         </div>
     );

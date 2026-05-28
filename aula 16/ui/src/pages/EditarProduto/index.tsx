@@ -7,6 +7,7 @@ interface Produto {
     _id: string;
     nome: string;
     preco: number;
+    quantidade: number;
     descricao: string;
     __v?: number;
 }
@@ -22,6 +23,7 @@ export default function EditarProduto() {
     const [dadosForm, setDadosForm] = useState({
         nome: "",
         preco: "",
+        quantidade: "",
         descricao: ""
     });
     const [carregando, setCarregando] = useState(true);
@@ -33,6 +35,7 @@ export default function EditarProduto() {
                 setDadosForm({
                     nome: response.data.data.nome,
                     preco: String(response.data.data.preco),
+                    quantidade: String(response.data.data.quantidade),
                     descricao: response.data.data.descricao
                 });
                 setCarregando(false);
@@ -57,6 +60,7 @@ export default function EditarProduto() {
         const dadosAtualizados = {
             nome: dadosForm.nome,
             preco: Number(dadosForm.preco),
+            quantidade: Number(dadosForm.quantidade),
             descricao: dadosForm.descricao,
         };
 
@@ -111,6 +115,18 @@ export default function EditarProduto() {
                     </div>
 
                     <div>
+                        <label className="form-label text-muted small fw-medium">Quantidade</label>
+                        <input 
+                            type="number" 
+                            className="form-control form-control-lg fs-6" 
+                            name="quantidade" 
+                            value={dadosForm.quantidade} 
+                            onChange={handleChange}
+                            required 
+                        />
+                    </div>
+
+                    <div>
                         <label className="form-label text-muted small fw-medium">Descrição</label>
                         <textarea 
                             className="form-control form-control-lg fs-6" 
@@ -121,6 +137,8 @@ export default function EditarProduto() {
                             required 
                         />
                     </div>
+
+
 
                     <div className="d-flex gap-2 mt-2">
                         <button 

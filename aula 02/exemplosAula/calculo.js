@@ -1,5 +1,5 @@
-const nome = "Gabriel";
-const idade = 15;
+const nome = "Eduardo";
+const idade = 21;
 
 const nomeIdade = ()=>{
     console,console.log(`A idade de ${nome} é ${idade}`);

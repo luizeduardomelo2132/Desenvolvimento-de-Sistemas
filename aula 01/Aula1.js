@@ -6,8 +6,8 @@
 use ("aulaDS")
 
 // db.people.insertOne({
-//     name: "Gabriel",
-//     age: 15
+//     name: "luiz",
+//     age: 21
 // })
 
 

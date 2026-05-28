@@ -1,3 +1,4 @@
+import style from './style.module.scss'
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
@@ -10,18 +11,13 @@ export default function InserirProduto() {
         const formData = new FormData(e.target as HTMLFormElement);
         const nome = formData.get('nome') as string;
         const preco = Number(formData.get('preco')) as number;
+        const quantidade = Number(formData.get('quantidade')) as number;
         const descricao = formData.get('descricao') as string;
-        const quantidade = Number(formData.get('quantidade')) as number; // 👈 1. Pegando a quantidade
 
-        // 👈 2. Enviando a quantidade para o seu ProdutoController
         axios.post('http://localhost:3000/produto', { nome, preco, descricao, quantidade })
             .then(() => {
                 navigate('/produtos');
             })
-            .catch((error) => {
-                console.error("Erro ao salvar produto:", error);
-                alert("Erro ao salvar produto. Verifique os dados.");
-            });
     }
 
     return (
@@ -53,15 +49,13 @@ export default function InserirProduto() {
                         />
                     </div>
 
-                    {/* 👈 3. NOVO INPUT DE QUANTIDADE ADICIONADO AQUI */}
                     <div>
-                        <label className="form-label text-muted small fw-medium">Quantidade em Estoque</label>
+                        <label className="form-label text-muted small fw-medium">Quantidade</label>
                         <input
                             type="number"
                             className="form-control form-control-lg fs-6"
                             placeholder="Ex: 10"
                             name="quantidade"
-                            min="0"
                             required
                         />
                     </div>
