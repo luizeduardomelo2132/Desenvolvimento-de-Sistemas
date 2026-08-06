@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import productsRoutes from "./routes/Productroutes.js"; 
 
 const app = express();
@@ -9,6 +10,7 @@ console.log("ESTE É O SERVER.TS DA TECHSTORE");
 
 const PORT = 3001;
 
+app.use(cors());
 app.use(express.json());
 
 app.use("/products", productsRoutes);

@@ -110,15 +110,27 @@ router.get("/", (req, res) => {
 });
 
 router.post("/", (req, res) => {
-    console.log("Entrou na rota POST /newProducts");
+    console.log("Entrou na rota POST /products");
 
-    const newProduct ={  
-        id: products.length + 1,
+    const newProduct = {  
+        id: products.length > 0 ? products[products.length - 1].id + 1 : 1,
         name: req.body.name,
         preco: req.body.preco
     };
 
-    res.json(newProduct);
+    products.push(newProduct);
+
+    res.status(201).json(newProduct);
+});
+
+router.delete("/:id", (req, res) => {
+    const productId = parseInt(req.params.id);
+    console.log(`Entrou na rota DELETE /products/${productId}`);
+    
+    const productIndex = products.findIndex((p) => p.id === productId);
+
+    const deletedProduct = products.splice(productIndex, 1)[0];
+    res.json(deletedProduct);
 });
 
 export default router;
