@@ -133,4 +133,17 @@ router.delete("/:id", (req, res) => {
     res.json(deletedProduct);
 });
 
+router.put("/:id", (req, res) => {
+    const productId = parseInt(req.params.id);
+    console.log(`Entrou na rota PUT /products/${productId}`);
+
+    const product = products.find((p) => p.id === productId);
+
+    
+    if (req.body.name !== undefined) product.name = req.body.name;
+    if (req.body.preco !== undefined) product.preco = req.body.preco;
+
+    res.json(product);
+});
+
 export default router;
