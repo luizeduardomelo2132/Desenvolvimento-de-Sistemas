@@ -1,6 +1,12 @@
 import express from "express";
 import cors from "cors";
-import productsRoutes from "./routes/Productroutes.js"; 
+import productsRoutes from "./routes/Productroutes.js"; // Ajustado para a pasta routes
+import connectdatabase from "./database/connection.js";
+import dns from "node:dns";
+import "dotenv/config";
+dns.setDefaultResultOrder("ipv4first");
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
+connectdatabase();
 
 const app = express();
 
